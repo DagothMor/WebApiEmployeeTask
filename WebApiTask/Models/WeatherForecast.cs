@@ -1,6 +1,6 @@
 using System;
 
-namespace WebApiTask
+namespace WebApiTask.Models
 {
     public class WeatherForecast
     {
