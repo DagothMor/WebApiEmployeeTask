@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,6 +12,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WebApiTask.Bootstrap;
+using WebApiTask.Context;
+using WebApiTask.Contexts;
+using WebApiTask.Repositories;
+using WebApiTask.Repositories.Interfaces;
 
 namespace WebApiTask
 {
@@ -28,15 +34,23 @@ namespace WebApiTask
         {
 
             services.AddControllers();
+            services.ConfigureDb(Configuration);
+            services.AddSingleton<DapperContext>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApiTask", Version = "v1" });
             });
+            services.AddTransient<IEmployeeRepository,EmployeeRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            //using (var varscoped = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            //{
+            //    varscoped.ServiceProvider.GetRequiredService<WebApiTaskContext>().Database.Migrate();
+            //}
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -45,6 +59,7 @@ namespace WebApiTask
             }
 
             app.UseHttpsRedirection();
+
 
             app.UseRouting();
 

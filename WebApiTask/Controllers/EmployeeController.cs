@@ -3,6 +3,25 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WebApiTask.Models;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using WebApiTask.Bootstrap;
+using WebApiTask.Context;
+using WebApiTask.Contexts;
+using WebApiTask.Repositories;
+using WebApiTask.Repositories.Interfaces;
 
 namespace WebApiTask.Controllers
 {
@@ -10,17 +29,19 @@ namespace WebApiTask.Controllers
     [ApiController]
     public class EmployeeController : ControllerBase
     {
+        IEmployeeRepository employeeRepository;
+        public EmployeeController(IEmployeeRepository EmployeeRepository) {
+            employeeRepository = EmployeeRepository;
+        }
         /// <summary>
         /// 3. Выводить список сотрудников для указанной компании. Все доступные поля.
         /// </summary>
         /// <param name="emp"></param>
         /// <returns></returns>
         [HttpGet("Employee")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Employee>))]
-        public async Task<IActionResult> GetAllEmployeesByCompany([FromBody] string company)// employeedto
+        public async Task<IEnumerable<Employee>> GetAllEmployeesByCompany([FromBody] string company)
         {
-            var test = company;
-            return Ok();
+            return await employeeRepository.GetAllEmployeesByCompany(company);
         }
 
         /// <summary>
@@ -29,11 +50,9 @@ namespace WebApiTask.Controllers
         /// <param name="emp"></param>
         /// <returns></returns>
         [HttpGet("Employee")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Employee>))]
-        public async Task<IActionResult> GetAllEmployeesByDepartment([FromBody] Department department)// employeedto
+        public async Task<IEnumerable<Employee>> GetAllEmployeesByDepartment([FromBody] string departmentName)
         {
-            var test = department;
-            return Ok();
+            return await employeeRepository.GetAllEmployeesByDepartment(departmentName);
         }
 
         /// <summary>
@@ -42,11 +61,9 @@ namespace WebApiTask.Controllers
         /// <param name="emp"></param>
         /// <returns></returns>
         [HttpPost("Employee")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Employee))]
-        public async Task<IActionResult> PostEmployee([FromBody] Employee emp)// employeedto
+        public async Task<string> PostEmployee([FromBody] Employee emp)// employeedto
         {
-            var test = emp;
-            return Ok();
+            return employeeRepository.AddEmployee(emp).ToString();
         }
 
         /// <summary>
@@ -55,16 +72,10 @@ namespace WebApiTask.Controllers
         /// <param name="emp"></param>
         /// <returns></returns>
         [HttpPut("Employee")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Employee))]
-        public async Task<IActionResult> Put([FromBody] Employee emp)// employeedto
+        public async Task<IActionResult> Put([FromBody] Employee emp)
         {
-            var name = emp.Name;
-            var department = emp.Department;
-            var test = emp;
-            // var test =dbcontext.firstdef(n=>n.id == emp.id)
-            // test = emp
-            // dbcontext.save
-            return Ok();
+            await employeeRepository.ChangeEmployee(emp);
+            return NoContent();
         }
 
         /// <summary>
@@ -73,10 +84,9 @@ namespace WebApiTask.Controllers
         /// <param name="emp"></param>
         /// <returns></returns>
         [HttpDelete("Employee")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> Delete([FromBody] int id)// employeedto
+        public async Task<IActionResult> Delete([FromBody] int id)
         {
-            var test = id;
+            await employeeRepository.DeleteEmployeeById(id);
             return NoContent();
         }
     }
